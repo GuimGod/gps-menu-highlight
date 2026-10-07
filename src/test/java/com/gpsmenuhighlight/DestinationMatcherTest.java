@@ -242,4 +242,18 @@ public class DestinationMatcherTest
 		assertTrue(DestinationMatcher.matchesItemOption(label, target, "Black chinchompas"));
 		assertFalse(DestinationMatcher.matchesItemOption(label, target, "Carnivorous chinchompas"));
 	}
+
+	@Test
+	public void scrollBookLightsOpenAndTheRowNotTheDefaultTeleport()
+	{
+		String label = "Master scroll book: Feldip hills teleport";
+		String target = "<col=ff9040>Master scroll book</col>";
+		assertFalse(DestinationMatcher.matchesItemOption(label, target, "Teleport"));
+		assertTrue(DestinationMatcher.matchesTopLevelItemOption(label, target, "Open"));
+		assertFalse(DestinationMatcher.matchesTopLevelItemOption(label, target, "Teleport"));
+		assertTrue(DestinationMatcher.matchesScrollBookRow(label, "<col=FF981F>Feldip Hills teleport scroll"));
+		assertFalse(DestinationMatcher.matchesScrollBookRow(label, "<col=FF981F>Spider Cave teleport scroll"));
+		assertFalse(DestinationMatcher.matchesScrollBookRow("Max cape: Crafting Guild", "<col=FF981F>Feldip Hills teleport scroll"));
+		assertTrue(DestinationMatcher.matchesItemOption("Xeric's talisman: 4. Xeric's Heart", "<col=ff9040>Xeric's talisman</col>", "Xeric's Heart"));
+	}
 }

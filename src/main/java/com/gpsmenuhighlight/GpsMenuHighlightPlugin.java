@@ -81,6 +81,12 @@ public class GpsMenuHighlightPlugin extends Plugin
 	};
 
 	private final RouteSteps route = new RouteSteps();
+	/** The Master scroll book interface (learned from the client log; its rows are named after their scrolls). */
+	private static final int SCROLL_BOOK_GROUP = 597;
+	private static final int SCROLL_BOOK_CHILDREN = 120;
+	private boolean bookOpen;
+	private Widget bookMarked;
+	private int bookOriginalColour;
 	private boolean nexusOpen;
 	private boolean boxOpen;
 	private boolean scrolledThisOpen;
@@ -150,6 +156,10 @@ public class GpsMenuHighlightPlugin extends Plugin
 			boxOpen = true;
 			loggedThisOpen = false;
 		}
+		else if (event.getGroupId() == SCROLL_BOOK_GROUP)
+		{
+			bookOpen = true;
+		}
 	}
 
 	@Subscribe
@@ -164,6 +174,11 @@ public class GpsMenuHighlightPlugin extends Plugin
 		{
 			boxOpen = false;
 			forgetMark();
+		}
+		else if (event.getGroupId() == SCROLL_BOOK_GROUP)
+		{
+			bookOpen = false;
+			bookMarked = null;
 		}
 	}
 
@@ -276,6 +291,10 @@ public class GpsMenuHighlightPlugin extends Plugin
 	@Subscribe
 	public void onPostClientTick(PostClientTick event)
 	{
+		if (bookOpen)
+		{
+			highlightScrollBook();
+		}
 		if (nexusOpen)
 		{
 			highlight(config.highlightNexus(), NEXUS_TEXT_LAYERS, true, "nexus");
@@ -284,6 +303,78 @@ public class GpsMenuHighlightPlugin extends Plugin
 		{
 			highlight(config.highlightJewelleryBox(), BOX_TEXT_LAYERS, false, "jewellery box");
 		}
+	}
+
+	/** Colours the name under the scroll the route uses, in the open Master scroll book. */
+	private void highlightScrollBook()
+	{
+		if (client.getWidget(SCROLL_BOOK_GROUP, 0) == null)
+		{
+			bookOpen = false;
+			bookMarked = null;
+			return;
+		}
+		Widget wanted = null;
+		if (config.highlightItemMenus())
+		{
+			List<String> steps = route.current(System.currentTimeMillis(), config.routeMaxAge() * 60_000L);
+			for (int child = 0; child < SCROLL_BOOK_CHILDREN && wanted == null; child++)
+			{
+				Widget row = client.getWidget(SCROLL_BOOK_GROUP, child);
+				if (row == null || row.getName() == null || row.getName().isEmpty())
+				{
+					continue;
+				}
+				for (String step : steps)
+				{
+					if (DestinationMatcher.matchesScrollBookRow(step, row.getName()))
+					{
+						wanted = scrollBookLabel(row);
+						break;
+					}
+				}
+			}
+		}
+		if (bookMarked != null && bookMarked != wanted)
+		{
+			bookMarked.setTextColor(bookOriginalColour);
+			bookMarked = null;
+		}
+		if (wanted != null)
+		{
+			int colour = config.highlightColour().getRGB() & 0xFFFFFF;
+			if (bookMarked == null)
+			{
+				bookOriginalColour = wanted.getTextColor();
+				bookMarked = wanted;
+			}
+			if (wanted.getTextColor() != colour)
+			{
+				wanted.setTextColor(colour);
+			}
+		}
+	}
+
+	/** The destination name inside a scroll book row: its text that is not the scroll count. */
+	private static Widget scrollBookLabel(Widget row)
+	{
+		Widget[][] kids = {row.getStaticChildren(), row.getNestedChildren(), row.getDynamicChildren()};
+		for (Widget[] list : kids)
+		{
+			if (list == null)
+			{
+				continue;
+			}
+			for (Widget kid : list)
+			{
+				String text = kid == null ? null : kid.getText();
+				if (text != null && !text.isEmpty() && !text.matches("[0-9,]+"))
+				{
+					return kid;
+				}
+			}
+		}
+		return null;
 	}
 
 	private void highlight(boolean enabled, int[] layerIds, boolean nexus, String menuName)

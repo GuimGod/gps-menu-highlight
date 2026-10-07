@@ -73,8 +73,30 @@ final class DestinationMatcher
 		PLACE_OPTIONS.put("eldergnomechild", "westernprovinces");
 	}
 
+	/** Options that name an action, not a destination. */
+	private static final java.util.Set<String> GENERIC_OPTIONS = new java.util.HashSet<>(
+		java.util.Arrays.asList("teleport", "open", "rub", "check", "wear", "wield", "remove"));
+	private static final String SCROLL_BOOK = "masterscrollbook";
+
 	private DestinationMatcher()
 	{
+	}
+
+	/**
+	 * Whether a row of the Master scroll book is the destination of a route step. The row is
+	 * named after its scroll ("Feldip Hills teleport scroll"), the step after the teleport
+	 * ("Master scroll book: Feldip hills teleport").
+	 */
+	static boolean matchesScrollBookRow(String routeLabel, String rowName)
+	{
+		if (rowName == null || !SCROLL_BOOK.equals(itemOf(routeLabel)))
+		{
+			return false;
+		}
+		String place = itemPlace(routeLabel);
+		String row = key(TAG.matcher(rowName).replaceAll(""));
+		return !place.isEmpty() && (row.equals(place + "scroll") || row.equals(place + "sscroll")
+			|| (place + "scroll").equals(row.replace("cavesteleport", "caveteleport")));
 	}
 
 	/** Lower case, letters and digits only. */
@@ -264,8 +286,9 @@ final class DestinationMatcher
 		{
 			return true;
 		}
-		// "Xeric's Heart" in the label may be just "Heart" in the menu
-		return opt.equals(place) || (opt.length() >= 4 && place.endsWith(opt));
+		// "Xeric's Heart" in the label may be just "Heart" in the menu; but "Teleport" on a scroll
+		// book is its default destination, not the "... teleport" the label ends with
+		return opt.equals(place) || (opt.length() >= 4 && place.endsWith(opt) && !GENERIC_OPTIONS.contains(opt));
 	}
 
 	/**
@@ -280,6 +303,11 @@ final class DestinationMatcher
 			return false;
 		}
 		String opt = key(TAG.matcher(option).replaceAll(""));
+		// a scroll book destination is picked inside the book
+		if (SCROLL_BOOK.equals(itemOf(routeLabel)))
+		{
+			return opt.equals("open");
+		}
 		return "teletopoh".equals(itemPlace(routeLabel)) && (opt.equals("home") || opt.equals("teletopoh"));
 	}
 
