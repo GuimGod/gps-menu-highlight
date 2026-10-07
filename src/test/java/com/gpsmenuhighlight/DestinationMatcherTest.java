@@ -256,4 +256,22 @@ public class DestinationMatcherTest
 		assertFalse(DestinationMatcher.matchesScrollBookRow("Max cape: Crafting Guild", "<col=FF981F>Feldip Hills teleport scroll"));
 		assertTrue(DestinationMatcher.matchesItemOption("Xeric's talisman: 4. Xeric's Heart", "<col=ff9040>Xeric's talisman</col>", "Xeric's Heart"));
 	}
+
+	@Test
+	public void theTeleportsSubMenuOfACarriedCapeIsAFlatList()
+	{
+		assertTrue(DestinationMatcher.isFlatTeleportList("Teleports"));
+		assertTrue(DestinationMatcher.isFlatTeleportList("<col=00ff00>Teleports</col>"));
+		assertFalse(DestinationMatcher.isFlatTeleportList("POH Portals"));
+		assertFalse(DestinationMatcher.isFlatTeleportList("Guild Teleports"));
+		assertFalse(DestinationMatcher.isFlatTeleportList(null));
+	}
+
+	@Test
+	public void jewelleryBoxRowsNamedDifferentlyFromTheRoute()
+	{
+		assertTrue(DestinationMatcher.matchesBoxRow("C: Edgeville Monastery", "<col=ccccff>C:</col> Monastery"));
+		assertTrue(DestinationMatcher.matchesBoxRow("8: Chasm of Tears", "<col=ccccff>8:</col> Tears of Guthix"));
+		assertFalse(DestinationMatcher.matchesBoxRow("C: Edgeville Monastery", "<col=ccccff>O:</col> Edgeville"));
+	}
 }

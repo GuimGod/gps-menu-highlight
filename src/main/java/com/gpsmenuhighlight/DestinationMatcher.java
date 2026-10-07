@@ -40,6 +40,9 @@ final class DestinationMatcher
 	static
 	{
 		ALIASES.put("kourend", "kourendcastle");
+		// jewellery box: the pathfinder's name against the row's
+		ALIASES.put("edgevillemonastery", "monastery");
+		ALIASES.put("chasmoftears", "tearsofguthix");
 		ALIASES.put("cemetery", "forgottencemetery");
 		ALIASES.put("carrallangar", "carrallanger");
 		ALIASES.put("carralanger", "carrallanger");
@@ -309,6 +312,15 @@ final class DestinationMatcher
 			return opt.equals("open");
 		}
 		return "teletopoh".equals(itemPlace(routeLabel)) && (opt.equals("home") || opt.equals("teletopoh"));
+	}
+
+	/**
+	 * Whether a sub-menu is the single list an item shows when it is carried rather than worn
+	 * ("Teleports" on a Max cape in the inventory), where first-level options such as "Home" live.
+	 */
+	static boolean isFlatTeleportList(String option)
+	{
+		return option != null && "teleports".equals(key(TAG.matcher(option).replaceAll("")));
 	}
 
 	/** Whether a menu belongs to the item some route step uses. */

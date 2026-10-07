@@ -236,9 +236,12 @@ public class GpsMenuHighlightPlugin extends Plugin
 				continue;
 			}
 			boolean inside = false;
+			// an unworn cape lists every destination in one "Teleports" sub-menu, "Home" included
+			boolean flat = DestinationMatcher.isFlatTeleportList(entry.getOption());
 			for (MenuEntry subEntry : subEntries)
 			{
-				if (matchesAnyStep(steps, target, subEntry.getOption()))
+				if (matchesAnyStep(steps, target, subEntry.getOption())
+					|| (flat && matchesAnyStepTopLevel(steps, target, subEntry.getOption())))
 				{
 					subEntry.setOption(DestinationMatcher.recolour(subEntry.getOption(), hex));
 					inside = true;
