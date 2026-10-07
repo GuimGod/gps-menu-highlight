@@ -212,7 +212,7 @@ public class GpsMenuHighlightPlugin extends Plugin
 				}
 				log.debug("GPS Menu Highlight item option '{}' sub-options {}", entry.getOption(), subOptions);
 			}
-			if (matchesAnyStep(steps, target, entry.getOption()))
+			if (matchesAnyStep(steps, target, entry.getOption()) || matchesAnyStepTopLevel(steps, target, entry.getOption()))
 			{
 				entry.setOption(DestinationMatcher.recolour(entry.getOption(), hex));
 			}
@@ -241,6 +241,18 @@ public class GpsMenuHighlightPlugin extends Plugin
 		for (String step : steps)
 		{
 			if (DestinationMatcher.isItemOfStep(step, target))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean matchesAnyStepTopLevel(List<String> steps, String target, String option)
+	{
+		for (String step : steps)
+		{
+			if (DestinationMatcher.matchesTopLevelItemOption(step, target, option))
 			{
 				return true;
 			}

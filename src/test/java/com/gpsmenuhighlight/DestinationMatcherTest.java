@@ -210,4 +210,36 @@ public class DestinationMatcherTest
 		steps.clear();
 		assertTrue(steps.current(1_000, 0).isEmpty());
 	}
+
+	@Test
+	public void diaryCapeLabelNamesTheNpcAndTheMenuNamesTheRegion()
+	{
+		String label = "Achievement diary cape: B. Hatius Cosaintus";
+		String target = "<col=ff9040>Achievement diary cape</col>";
+		assertTrue(DestinationMatcher.matchesItemOption(label, target, "Lumbridge & Draynor"));
+		assertFalse(DestinationMatcher.matchesItemOption(label, target, "Varrock"));
+		assertTrue(DestinationMatcher.matchesItemOption("Achievement diary cape: Kaleb Paramaya", target, "Karamja (Shilo)"));
+		assertFalse(DestinationMatcher.matchesItemOption("Achievement diary cape: Kaleb Paramaya", target, "Karamja"));
+		assertTrue(DestinationMatcher.matchesItemOption("Achievement diary cape: Twiggy O'Korn", target, "Twiggy O'Korn"));
+	}
+
+	@Test
+	public void maxCapeTeleToPohIsTheHomeOptionOnTheFirstLevelOnly()
+	{
+		String label = "Max cape: Tele to POH";
+		String target = "<col=ff9040>Max cape</col>";
+		assertTrue(DestinationMatcher.matchesTopLevelItemOption(label, target, "Home"));
+		assertFalse(DestinationMatcher.matchesTopLevelItemOption(label, target, "Crafting Guild"));
+		assertFalse(DestinationMatcher.matchesItemOption(label, target, "Home"));
+		assertFalse(DestinationMatcher.matchesTopLevelItemOption("Max cape: Fishing Guild", target, "Home"));
+	}
+
+	@Test
+	public void aPluralInTheMenuStillMatches()
+	{
+		String label = "Max cape: Other Teleports: Black chinchompa";
+		String target = "<col=ff9040>Max cape</col>";
+		assertTrue(DestinationMatcher.matchesItemOption(label, target, "Black chinchompas"));
+		assertFalse(DestinationMatcher.matchesItemOption(label, target, "Carnivorous chinchompas"));
+	}
 }

@@ -46,6 +46,33 @@ final class DestinationMatcher
 		ALIASES.put("carralangar", "carrallanger");
 	}
 
+	/**
+	 * Item teleports whose route label names the arrival NPC while the menu names the region:
+	 * the Achievement diary cape ("Achievement diary cape: B. Hatius Cosaintus" against the
+	 * option "Lumbridge & Draynor"). Both sides already reduced by {@link #key}.
+	 */
+	private static final Map<String, String> PLACE_OPTIONS = new HashMap<>();
+
+	static
+	{
+		PLACE_OPTIONS.put("twopints", "ardougne");
+		PLACE_OPTIONS.put("jarr", "desert");
+		PLACE_OPTIONS.put("sirrebral", "falador");
+		PLACE_OPTIONS.put("thorodin", "fremennik");
+		PLACE_OPTIONS.put("flaxkeeper", "kandarin");
+		PLACE_OPTIONS.put("piratejackiethefruit", "karamja");
+		PLACE_OPTIONS.put("kalebparamaya", "karamjashilo");
+		PLACE_OPTIONS.put("jungleforester", "karamjajungle");
+		PLACE_OPTIONS.put("tzhaarmej", "karamjamorulrek");
+		PLACE_OPTIONS.put("elise", "kourendkebos");
+		PLACE_OPTIONS.put("hatiuscosaintus", "lumbridgedraynor");
+		PLACE_OPTIONS.put("lesabr", "morytania");
+		PLACE_OPTIONS.put("lesabre", "morytania");
+		PLACE_OPTIONS.put("toby", "varrock");
+		PLACE_OPTIONS.put("lesserfanatic", "wilderness");
+		PLACE_OPTIONS.put("eldergnomechild", "westernprovinces");
+	}
+
 	private DestinationMatcher()
 	{
 	}
@@ -228,8 +255,32 @@ final class DestinationMatcher
 		{
 			return false;
 		}
+		if (opt.equals(PLACE_OPTIONS.get(place)))
+		{
+			return true;
+		}
+		// "Black chinchompa" in the label is "Black chinchompas" in the menu
+		if (opt.equals(place + "s") || place.equals(opt + "s"))
+		{
+			return true;
+		}
 		// "Xeric's Heart" in the label may be just "Heart" in the menu
 		return opt.equals(place) || (opt.length() >= 4 && place.endsWith(opt));
+	}
+
+	/**
+	 * As {@link #matchesItemOption}, for options that only count on the item's first menu level:
+	 * "Max cape: Tele to POH" is the option "Home" there, while "Home" inside "POH Portals"
+	 * is the portal outside the house.
+	 */
+	static boolean matchesTopLevelItemOption(String routeLabel, String menuTarget, String option)
+	{
+		if (menuTarget == null || option == null || !isItemOfStep(routeLabel, menuTarget))
+		{
+			return false;
+		}
+		String opt = key(TAG.matcher(option).replaceAll(""));
+		return "teletopoh".equals(itemPlace(routeLabel)) && (opt.equals("home") || opt.equals("teletopoh"));
 	}
 
 	/** Whether a menu belongs to the item some route step uses. */
